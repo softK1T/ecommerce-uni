@@ -21,7 +21,7 @@ namespace ecommerce_uni.Controllers
         public async Task<ActionResult<List<Product>>> GetAll(
             [FromQuery] string? search,
             [FromQuery] string? sort,
-              [FromQuery] string? category,
+            [FromQuery] int? category,
             [FromQuery] decimal? minPrice, 
             [FromQuery] decimal? maxPrice
             )
@@ -33,7 +33,7 @@ namespace ecommerce_uni.Controllers
                 query = query.Where(p => p.Name.Contains(search) || (p.Description != null && p.Description.Contains(search)));
             }
 
-            if (!string.IsNullOrEmpty(category))
+            if (category.HasValue)
             {
                 query = query.Where(p => p.Category == category);
             }

@@ -1,7 +1,6 @@
 ﻿using ecommerce_uni.Data;
 using Microsoft.EntityFrameworkCore;
 using ecommerce_uni.Models;
-using Microsoft.OpenApi.Models; 
 using Swashbuckle.AspNetCore.SwaggerGen; 
 
 var builder = WebApplication.CreateBuilder(args);
