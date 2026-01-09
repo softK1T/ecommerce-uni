@@ -10,7 +10,7 @@ namespace ecommerce_uni.Controllers
     [Route("api/[controller]")]
     public class ProductsController : ControllerBase
     {
-        private static ShopDbContext _db;
+        private readonly ShopDbContext _db;
 
         public ProductsController(ShopDbContext db)
         {
@@ -18,7 +18,13 @@ namespace ecommerce_uni.Controllers
         }
 
         [HttpGet]        
-        public async Task<ActionResult<List<Product>>> GetAll(string? search, string? sort)
+        public async Task<ActionResult<List<Product>>> GetAll(
+            [FromQuery] string? search,
+            [FromQuery] string? sort,
+              [FromQuery] string? category,
+            [FromQuery] decimal? minPrice, 
+            [FromQuery] decimal? maxPrice
+            )
         {
             var query = _db.Products.AsNoTracking();
 
@@ -26,6 +32,23 @@ namespace ecommerce_uni.Controllers
             {
                 query = query.Where(p => p.Name.Contains(search) || (p.Description != null && p.Description.Contains(search)));
             }
+
+            if (!string.IsNullOrEmpty(category))
+            {
+                query = query.Where(p => p.Category == category);
+            }
+
+            if (minPrice.HasValue)
+            {
+                query = query.Where(p => p.Price >= minPrice.Value);
+            }
+
+            if (maxPrice.HasValue)
+            {
+                query = query.Where(p => p.Price <= maxPrice.Value);
+            }
+
+
 
             query = sort switch
             {
@@ -37,13 +60,22 @@ namespace ecommerce_uni.Controllers
             return await query.ToListAsync();
         }
 
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Product>> GetById(int id)
+        {
+            var product = await _db.Products.FindAsync(id);
+            if (product == null) return NotFound();
+            return product;
+        }
+
         [HttpPost]
         public async Task<ActionResult<Product>> CreateProduct(Product product)
         {
             _db.Products.Add(product);
             await _db.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetAll), new { id = product.Id }, product);
+            return CreatedAtAction(nameof(GetById), new { id = product.Id }, product);
         }
+
 
     }
 }
